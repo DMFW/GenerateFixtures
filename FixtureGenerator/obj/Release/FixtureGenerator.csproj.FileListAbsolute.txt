@@ -1,0 +1,9 @@
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\obj\Release\FixtureGenerator.frmGenerate.resources
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\obj\Release\FixtureGenerator.Properties.Resources.resources
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\obj\Release\FixtureGenerator.csproj.GenerateResource.Cache
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\bin\Release\FixtureGenerator.exe.config
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\bin\Release\FixtureGenerator.exe
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\bin\Release\FixtureGenerator.pdb
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\obj\Release\FixtureGenerator.exe
+C:\Documents and Settings\HP_Administrator\My Documents\Visual Studio 2008\Projects\FixtureGenerator\FixtureGenerator\obj\Release\FixtureGenerator.pdb
