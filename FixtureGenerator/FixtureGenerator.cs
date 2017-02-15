@@ -15,13 +15,16 @@ namespace FixtureGenerator
     {
 
         private string _ExcelSheetPath;
-        private Int16 _NumberOfTeams;
-        private Int16 _NumberOfRounds;
-        private Int16 _StartingWeek;
+        private short _NumberOfTeams;
+        private short _NumberOfRounds;
+        private short _StartingWeek;
         private DateTime _FirstDate;
         private bool _InterRoundPositionNights;
         private bool _FinalPositionNight;
-        List<Team> _TeamList = new List<Team>();
+        Dictionary<short, Team> _dctTeams = new Dictionary<short, Team>();
+        Team _pivotTeam;
+        Queue<Team> _homeTeams;
+        Queue<Team> _awayTeams;
 
         private bool _ImportValid;
         private bool _DatesVerified;
@@ -35,24 +38,12 @@ namespace FixtureGenerator
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            _Fixtures = new Fixtures(_StartingWeek,_NumberOfTeams, _NumberOfRounds, _InterRoundPositionNights);
-            btnApportion.Enabled = true;
+            _Fixtures = new Fixtures(_ExcelSheetPath, _StartingWeek, _NumberOfRounds, _InterRoundPositionNights, _dctTeams);
+            _Fixtures.Generate(_pivotTeam, _homeTeams, _awayTeams);
+            btnCopyToClipboard.Enabled = true;
         }
 
-        private void btnApportion_Click(object sender, EventArgs e)
-        {
-            if (_Fixtures != null)
-            {
-                _Fixtures.ApportionLanes();
-                btnCopyToClipboard.Enabled = true;
-            }
-            else
-            {
-                MessageBox.Show("Fixures must be generated first before apportioning across lanes");
-            }
-
-        }
-
+       
         private void btnCopyToClipboard_Click(object sender, EventArgs e)
         {
 
@@ -103,6 +94,9 @@ namespace FixtureGenerator
             importValid = ImportParameters(wb);
 
             if (importValid) { importValid = ImportTeams(wb); }
+            if (importValid) { importValid = ImportFirstWeekFixtures(wb); }
+
+            wb.Close();
 
             if (importValid) { btnGenerate.Enabled = true; }
         }
@@ -163,45 +157,143 @@ namespace FixtureGenerator
 
         private bool ImportTeams(Excel.Workbook wb)
         {
+            bool importTeams = true;
             Team currentTeam = null;
             
             Excel.Worksheet ws = wb.Sheets["Setup"];
+            try
+            {
+                Excel.Range rangeTeamCodes = ws.Range["TeamCodes"];
 
-            Excel.Range rangeTeamCodes = ws.Range["TeamCodes"];
+                int currentTeamRow = 0; // The relative row in the range
+                int currentColumn = 0;  // The relative column in the range
+                int lastTeamRow = 0;
+                foreach (Excel.Range cell in rangeTeamCodes)
+                {
 
-            int currentTeamRow = 0;
-            int lastTeamRow = 0;
-            foreach (Excel.Range cell in rangeTeamCodes)
+                    currentTeamRow = cell.Row - rangeTeamCodes.Row + 1;
+
+                    if (currentTeamRow != lastTeamRow)
+                    {
+                        if (currentTeam != null)
+                        {
+                            if (importTeams) { importTeams = AddTeam(currentTeam, cell.Row); };
+                        }
+                        currentTeam = new Team();
+                        lastTeamRow = currentTeamRow;
+                    }
+
+                    currentColumn = cell.Column - rangeTeamCodes.Column + 1;
+
+                    switch (currentColumn)
+                    {
+                        case 1:
+                            currentTeam.ID = (short)cell.Value;
+                            break;
+                        case 2:
+                            currentTeam.Code = cell.Value.ToString();
+                            break;
+                        case 3:
+                            currentTeam.Name = cell.Value.ToString();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                if (importTeams) { AddTeam(currentTeam, currentTeamRow + rangeTeamCodes.Row); } // Add the last team
+                lstImportValidation.Items.Add(_dctTeams.Count() + " Teams loaded");
+                return importTeams;
+            }
+            catch(Exception e)
+            {
+                lstImportValidation.Items.Add("Teams could not be loaded " + e.Message);
+                return false;
+            }
+        }
+
+        private bool AddTeam(Team currentTeam, int row)
+        {
+            if (_dctTeams.ContainsKey(currentTeam.ID))
+            {
+                lstImportValidation.Items.Add("Team " + currentTeam.ID + " is represented at least twice. Import failed on row " + row);
+                return false;
+            }
+            else
+            {
+                _dctTeams.Add(currentTeam.ID, currentTeam);
+                return true;
+            }
+        }
+
+        private bool ImportFirstWeekFixtures(Excel.Workbook wb)
+        {
+            bool firstWeekFixturesValid = true;
+            Dictionary<short, Team> dctUsedTeams = new Dictionary<short, Team>();
+            short teamID;
+
+            Excel.Worksheet ws = wb.Sheets["Setup"];
+
+            _pivotTeam = null;
+            _homeTeams = new Queue<Team>();
+            _awayTeams = new Queue<Team>();
+
+            try
             {
 
-                currentTeamRow = cell.Row;
+                Excel.Range rangeFirstWeekFixtures = ws.Range["FirstWeekFixtures"];
 
-                if (currentTeamRow != lastTeamRow)
+                foreach (Excel.Range cell in rangeFirstWeekFixtures)
                 {
-                    if (currentTeam != null)
+                    if (!Int16.TryParse(cell.Value.ToString(), out teamID))
                     {
-                        _TeamList.Add(currentTeam);
+                        firstWeekFixturesValid = false;
+                        lstImportValidation.Items.Add("Team ID " + cell.Value + " in first week fixtures is not numeric");
                     }
-                    currentTeam = new Team();
+                    else
+                    {
+                        if ((teamID < 1) | (teamID > _dctTeams.Count))
+                        {
+                            firstWeekFixturesValid = false;
+                            lstImportValidation.Items.Add("Team ID " + cell.Value + " in first week fixtures is out of the valid ID range");
+                        }
+                        else
+                        {
+                            if (dctUsedTeams.ContainsKey(teamID))
+                            {
+                                firstWeekFixturesValid = false;
+                                lstImportValidation.Items.Add("Team ID " + cell.Value + " has been used more than once in the first weeks fixtures");
+                            }
+                            else
+                            {
+                                int currentColumn = cell.Column - rangeFirstWeekFixtures.Column + 1;
+                                switch (currentColumn)
+                                {
+                                    case 1:
+                                        if (_pivotTeam == null) { _pivotTeam = _dctTeams[teamID]; } else { _homeTeams.Enqueue(_dctTeams[teamID]); }
+                                        break;
+                                    case 2:
+                                        _awayTeams.Enqueue(_dctTeams[teamID]);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                dctUsedTeams.Add(teamID, _dctTeams[teamID]);
+                            }
+                        }
+                    }
                 }
 
-                switch (cell.Column)
-                {
-                    case 1:
-                        currentTeam.ID = cell.Value;
-                        break;
-                    case 2:
-                        currentTeam.Code = cell.Value.ToString();
-                        break;
-                    case 3:
-                        currentTeam.Name = cell.Value;
-                        break;
-                    default:
-                        break;
-                }
+                lstImportValidation.Items.Add("First week fixtures loaded. OK to proceed to generate.");
+                return firstWeekFixturesValid;
+
             }
-            wb.Close();
-            return true;
+            catch (Exception e)
+            {
+                lstImportValidation.Items.Add("First week fixtures could not be loaded " + e.Message);
+                return false;
+            }
+
         }
     }
 }

@@ -3,70 +3,44 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace FixtureGenerator
 {
     class Fixtures
     {
-
-        private string[] _teamNames = { "Quicquid", "Lane Rangers", "Turkey's Delight", "Three Amigos", "Essex Boyz", "Drambusters" };
-        private string[] _teamCodes = { "QUIQUID", "LANERANG", "TURKEYSD", "XTREMEAM", "EBOYZ", "DRAMBUST" };
-
-        private Int16 _NoOfTeams;
+        private string _worksheetPath;
+        private short _StartingWeek;
         private Int16 _NoOfRounds;
-        private Int16 _StartingWeek;
         private Int16 _RequiredLanes;
         private bool _positionNightPerRound;
-        private List<Team> _lstTeams = new List<Team>();
+        private Dictionary<short, Team> _dctTeams = new Dictionary<short, Team>();
         private List<Week> _lstWeeks = new List<Week>();
 
-        public Fixtures(Int16 StartingWeek, Int16 NoOfTeams, Int16 NoOfRounds, bool PositionNightPerRound)
+        public Fixtures(string worksheetPath, Int16 StartingWeek, Int16 NoOfRounds, bool PositionNightPerRound, Dictionary<short, Team> dctTeams)
         {
-            _NoOfTeams = NoOfTeams;
+            _worksheetPath = worksheetPath;
+            _dctTeams = dctTeams;
             _NoOfRounds = NoOfRounds;
             _StartingWeek = StartingWeek;
-            _RequiredLanes = (Int16)_teamNames.Count();
+            _RequiredLanes = (Int16)_dctTeams.Count();
             if (_RequiredLanes % 2 != 0) _RequiredLanes--; // The required lanes are always even and one less than the team count if that is odd
             _positionNightPerRound = PositionNightPerRound;
-            Generate();
         }
 
-        private void Generate()
+        public void Generate(Team lockedHomeTeam, Queue<Team> homeTeams, Queue<Team> awayTeams)
         {
-            Queue<Team> homeTeams = new Queue<Team>();
-            Queue<Team> awayTeams = new Queue<Team>();
-            Team lockedHomeTeam;
+            DeriveBasicFixtures(lockedHomeTeam, homeTeams, awayTeams);
+            ApportionLanes();
+            WriteToSheet();
+        }
+
+        private void DeriveBasicFixtures(Team lockedHomeTeam, Queue<Team> homeTeams, Queue<Team> awayTeams)
+        {
+
             Team firstAwayTeam;
-
-            lockedHomeTeam = new Team(1, _teamNames[0], _teamCodes[0]); // This team is not queued.
-
-            _lstTeams.Add(lockedHomeTeam);
-
-            for (Int16 i = _NoOfTeams; i > 1; i--)
-            {
-                Team realTeam = new Team(i, _teamNames[i - 1], _teamCodes[i - 1]);
-                realTeam.Dummy = false;
-
-                _lstTeams.Add(realTeam);
-
-                if (i <= Math.Round((decimal)_NoOfTeams / 2, 0, MidpointRounding.AwayFromZero))
-                {
-                    homeTeams.Enqueue(realTeam);
-                }
-                else
-                {
-                    awayTeams.Enqueue(realTeam);
-                }
-            }
-
-            if (awayTeams.Count > (homeTeams.Count + 1))
-            {
-                Team dummyTeam = new Team(_NoOfTeams + 1,"","");
-                dummyTeam.Dummy = true;
-                homeTeams.Enqueue(dummyTeam);
-            }
-
-            Int16 NoOfWeeks = (short)((_NoOfTeams - 1) * _NoOfRounds);
+        
+            Int16 NoOfWeeks = (short)((_dctTeams.Count - 1) * _NoOfRounds);
 
             if (_positionNightPerRound)
             {
@@ -103,9 +77,10 @@ namespace FixtureGenerator
                homeTeams.Enqueue(awayTeams.Dequeue());
                positionNightHandledForRound = false;
             }
+
         }
 
-        public void ApportionLanes()
+        private void ApportionLanes()
         {
             List<Match> AllMatches = new List<Match>();
             Dictionary<Int16,IGrouping<Int16, Match>> currentTeamLaneGroups = new Dictionary<Int16,IGrouping<Int16, Match>>();
@@ -116,7 +91,7 @@ namespace FixtureGenerator
                 AllMatches.AddRange(week.Matches);
             }
 
-            foreach (Team teamToFix in _lstTeams)
+            foreach (Team teamToFix in _dctTeams.Values)
             {
 
                  // LINQ below returns matches across all weeks grouped by lane for the current team
@@ -252,7 +227,7 @@ namespace FixtureGenerator
                  }
                  while (moreAdjmustmentsToDoForCurrentTeam);
 
-                // End of a team. Tage any remaining unmoved ones as resolved because we don't want to move them now.
+                // End of a team. Tag any remaining unmoved ones as resolved because we don't want to move them now.
                 foreach (Match teamMatch in AllMatches) 
                 {
                     if (((teamMatch.HomeTeam == teamToFix) || (teamMatch.AwayTeam == teamToFix)) && (!teamMatch.IsFinalised))
@@ -310,6 +285,15 @@ namespace FixtureGenerator
         private Int16 IDToHomeLaneNo(Int16 ID)
         {
             return (Int16)((ID * 2) - 1);
+        }
+
+        public void WriteToSheet()
+        {
+            Excel.Application excel = new Excel.Application();
+            excel.Visible = true;
+            Excel.Workbook wb = excel.Workbooks.Open(_worksheetPath);
+
+
         }
 
         public void WriteToClipboard()

@@ -31,7 +31,6 @@
             this.btnGenerate = new System.Windows.Forms.Button();
             this.stsStrip = new System.Windows.Forms.StatusStrip();
             this.tssLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.btnApportion = new System.Windows.Forms.Button();
             this.btnCopyToClipboard = new System.Windows.Forms.Button();
             this.txtMasterSpreadsheet = new System.Windows.Forms.TextBox();
             this.btnSpreadsheet = new System.Windows.Forms.Button();
@@ -45,7 +44,7 @@
             // btnGenerate
             // 
             this.btnGenerate.Enabled = false;
-            this.btnGenerate.Location = new System.Drawing.Point(33, 532);
+            this.btnGenerate.Location = new System.Drawing.Point(40, 627);
             this.btnGenerate.Margin = new System.Windows.Forms.Padding(7);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(226, 56);
@@ -62,7 +61,7 @@
             this.stsStrip.Location = new System.Drawing.Point(0, 735);
             this.stsStrip.Name = "stsStrip";
             this.stsStrip.Padding = new System.Windows.Forms.Padding(2, 0, 33, 0);
-            this.stsStrip.Size = new System.Drawing.Size(721, 42);
+            this.stsStrip.Size = new System.Drawing.Size(1547, 42);
             this.stsStrip.TabIndex = 6;
             // 
             // tssLabel
@@ -71,22 +70,10 @@
             this.tssLabel.Size = new System.Drawing.Size(88, 37);
             this.tssLabel.Text = "Status";
             // 
-            // btnApportion
-            // 
-            this.btnApportion.Enabled = false;
-            this.btnApportion.Location = new System.Drawing.Point(33, 639);
-            this.btnApportion.Margin = new System.Windows.Forms.Padding(7);
-            this.btnApportion.Name = "btnApportion";
-            this.btnApportion.Size = new System.Drawing.Size(226, 54);
-            this.btnApportion.TabIndex = 9;
-            this.btnApportion.Text = "Apportion Lanes";
-            this.btnApportion.UseVisualStyleBackColor = true;
-            this.btnApportion.Click += new System.EventHandler(this.btnApportion_Click);
-            // 
             // btnCopyToClipboard
             // 
             this.btnCopyToClipboard.Enabled = false;
-            this.btnCopyToClipboard.Location = new System.Drawing.Point(481, 601);
+            this.btnCopyToClipboard.Location = new System.Drawing.Point(346, 627);
             this.btnCopyToClipboard.Margin = new System.Windows.Forms.Padding(7);
             this.btnCopyToClipboard.Name = "btnCopyToClipboard";
             this.btnCopyToClipboard.Size = new System.Drawing.Size(175, 91);
@@ -100,13 +87,13 @@
             this.txtMasterSpreadsheet.Location = new System.Drawing.Point(35, 73);
             this.txtMasterSpreadsheet.Multiline = true;
             this.txtMasterSpreadsheet.Name = "txtMasterSpreadsheet";
-            this.txtMasterSpreadsheet.Size = new System.Drawing.Size(646, 81);
+            this.txtMasterSpreadsheet.Size = new System.Drawing.Size(1476, 81);
             this.txtMasterSpreadsheet.TabIndex = 11;
             this.txtMasterSpreadsheet.TextChanged += new System.EventHandler(this.txtMasterSpreadsheet_TextChanged);
             // 
             // btnSpreadsheet
             // 
-            this.btnSpreadsheet.Location = new System.Drawing.Point(532, 25);
+            this.btnSpreadsheet.Location = new System.Drawing.Point(1362, 19);
             this.btnSpreadsheet.Name = "btnSpreadsheet";
             this.btnSpreadsheet.Size = new System.Drawing.Size(149, 42);
             this.btnSpreadsheet.TabIndex = 12;
@@ -143,21 +130,20 @@
             this.lstImportValidation.ItemHeight = 29;
             this.lstImportValidation.Location = new System.Drawing.Point(35, 247);
             this.lstImportValidation.Name = "lstImportValidation";
-            this.lstImportValidation.Size = new System.Drawing.Size(646, 236);
+            this.lstImportValidation.Size = new System.Drawing.Size(1476, 352);
             this.lstImportValidation.TabIndex = 15;
             // 
             // frmGenerate
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 29F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(721, 777);
+            this.ClientSize = new System.Drawing.Size(1547, 777);
             this.Controls.Add(this.lstImportValidation);
             this.Controls.Add(this.btnImport);
             this.Controls.Add(this.lblMasterSpreadsheet);
             this.Controls.Add(this.btnSpreadsheet);
             this.Controls.Add(this.txtMasterSpreadsheet);
             this.Controls.Add(this.btnCopyToClipboard);
-            this.Controls.Add(this.btnApportion);
             this.Controls.Add(this.stsStrip);
             this.Controls.Add(this.btnGenerate);
             this.Margin = new System.Windows.Forms.Padding(7);
@@ -177,7 +163,6 @@
         private System.Windows.Forms.Button btnGenerate;
         private System.Windows.Forms.StatusStrip stsStrip;
         private System.Windows.Forms.ToolStripStatusLabel tssLabel;
-        private System.Windows.Forms.Button btnApportion;
         private System.Windows.Forms.Button btnCopyToClipboard;
         private System.Windows.Forms.TextBox txtMasterSpreadsheet;
         private System.Windows.Forms.Button btnSpreadsheet;

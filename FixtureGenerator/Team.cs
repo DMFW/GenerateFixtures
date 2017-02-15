@@ -7,7 +7,7 @@ namespace FixtureGenerator
 {
     class Team
     {
-        public Int32 ID;
+        public short ID;
         public string Name;
         public string Code;
         public bool Dummy;
@@ -16,7 +16,7 @@ namespace FixtureGenerator
         {
 
         }
-        public Team(Int32 id, string name, string code)
+        public Team(short id, string name, string code)
         {
             ID = id;
             Name = name;
